@@ -270,7 +270,7 @@ hex
     dup 6 rshift ( frq r20 P0 )
     \ Translate P0 into P0V
     S14_PVs + c@ S14_P0V !
-    20 and 23 5 - lshift S14_M0 @ or S14_M0 !
+    20 and 17 5 - lshift S14_M0 @ or S14_M0 !
     \ Calculate FREF0 ( 18 in hex is 12 !!!)
     S14_FOUT0 1 12 lshift UM* ( frq fout0*[1<<18] )
     S14_N0 @ S14_M0 @ m*/ ( frq fref0 . )
@@ -283,23 +283,28 @@ hex
     3 0 do ( frq )
 	\ Get PV
 	i S14_P0 !
-	S14_PVs i + c@ dup S14_P0V ! ( frq pv )
-	2 ( frq pv N )
+	2 ( frq N )
 	1 0 do
+	    S14_PVs S14_P0 @ + c@ dup S14_P0V ! ( frq N pv )
+	    swap ( frq pv N )
+	    ." a:" .s cr
 	    126 over < if
 		leave
 	    then ( frq pv N )
 	    \ Calculate fvco
 	    swap over m* ( frq N pv*N . )
-	    pick 3 1 ( frq N pv*N . frq 1 )
-	    m*/ ( frq N fvco )
+	    ." b:" .s cr
+	    3 pick 1 ( frq N pv*N . frq 1 )
+	    ." c:" .s cr
+	    m*/ ( frq N fvco . )
+	    ." d:" .s cr
 	    2dup S14_FVCO 2!
 	    \ 2dup d. cr
 	    2dup S14_FVCOL D< if
 		2drop 
 	    else
 		S14_FVCOH  D< if
-		    \ ." Found! "
+		    ." Found! "
 		    leave
 		then
 	    then ( frq N )
@@ -318,43 +323,50 @@ hex
     S14_N0 ! ( frq )
     drop ( )
     \ Calculate M=FVCO/FREF to get the value properly scaled, multiply FVCO first by 1<<18)
-    S14_FVCO 2@ 1 12 lshift 0 ud* ( )
-    S14_FREF 2@ ud/ ( )
-    \ Calculated M is in UDres
-    \ Older words must be 0
-    UDres 2@ d0= not if
-	." M is too big "
-	throw 86
-    then
-    UDres 2 cells + 2@ ( M . )
+    S14_FVCO 2@ 
+    2dup ." fvco=" d.
+    1 12 lshift 0 ud* ( )
+    .UDres
+    S14_FREF 2@ 
+    2dup ." fref=" d.
+    ud/ ( M . )
     ffffff. 2over d< if
-	." M is too big "
-	throw 86
+	." Lower  M is too big " d.
+	87 throw 
     then
-    drop ( M ) \ Discard higher word of M
+    2dup ." M=" d.
+    drop
     dup S14_M0 !
     \ So now we are ready to write the results, copying other settings from channel 0
     S14_CP0 @ 6 lshift
     over 7e0000 and 17 rshift or
     3 swap FMS14Q_wr ( M )
+    ." o1 " depth .
     dup 9 rshift ff and
     7 swap FMS14Q_wr ( M )
+    ." o2 " depth .
     dup 1 rshift ff and
     b swap FMS14Q_wr ( M )
+    ." o3 " depth .
     dup 1 and 7 lshift
     S14_N0 @ 7f and or
     f swap FMS14Q_wr ( M )
+    ." o4 " depth .
     14 FMS14Q_rd 1f and
     S14_P0 @ 6 lshift or
     swap 800000 and 17 5 - rshift or    
-    17 swap FMS14Q_wr ( ) \ r20->r23
+    17 swap FMS14Q_wr ( )
+    ." o5 " depth .
     \ Now toggle the FSEL bits
     12 FMS14Q_rd
     dup e7 and
+    ." o6 " depth .
     12 swap FMS14Q_wr
     18 or
+    ." o7 " depth .
     12 swap FMS14Q_wr
-;    
+    ." o8 " depth .
+;
 
 \ Procedures to control the clock matrix
 hex
