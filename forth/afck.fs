@@ -349,11 +349,11 @@ hex
     swap 800000 and 17 5 - rshift or    
     17 swap FMS14Q_wr ( ) \ r20->r23
     \ Now toggle the FSEL bits
-    12 FSM14Q_rd
+    12 FMS14Q_rd
     dup e7 and
-    12 swap FSM14Q_wr
+    12 swap FMS14Q_wr
     18 or
-    12 swap FSM14Q_wr
+    12 swap FMS14Q_wr
 ;    
 
 \ Procedures to control the clock matrix
