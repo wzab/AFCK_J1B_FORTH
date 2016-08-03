@@ -245,10 +245,14 @@ variable S14_CP0
 variable S14_N0
 variable S14_M0 \ It is stored multiplied by 1 << 18
 create S14_PVs 1 c, 2 c, 4 c, 5 c,
+variable S14_P0
 variable S14_P0V
+2variable S14_FVCO
 2variable S14_FREF
 decimal
-212500000 constant S14_FOUT0 
+212500000 constant S14_FOUT0
+decimal 1950 1000000 um* 2constant S14_FVCOL
+decimal 2600 1000000 um* 2constant S14_FVCOH
 hex
 : FMS14Q_SetFrq ( frq -- )
     \ Read settings for config 0
@@ -267,14 +271,89 @@ hex
     \ Translate P0 into P0V
     S14_PVs + c@ S14_P0V !
     20 and 23 5 - lshift S14_M0 @ or S14_M0 !
-    \ Calculate FREF0
-    S14_FOUT0 1 18 lshift UM* ( frq fout0*[1<<18] )
+    \ Calculate FREF0 ( 18 in hex is 12 !!!)
+    S14_FOUT0 1 12 lshift UM* ( frq fout0*[1<<18] )
     S14_N0 @ S14_M0 @ m*/ ( frq fref0 . )
     S14_FREF 2! ( frq )
     \ Print results
     ." S14_M0*2^18=" S14_M0 @ .
     ." S14_N0=" S14_N0 @ .
-    ." S14_FREF0=" S14_FREF 2@ d.    
+    ." S14_FREF0=" S14_FREF 2@ d.
+    \ Now we find the right divisor
+    3 0 do ( frq )
+	\ Get PV
+	i S14_P0 !
+	S14_PVs i + c@ dup S14_P0V ! ( frq pv )
+	2 ( frq pv N )
+	1 0 do
+	    126 over < if
+		leave
+	    then ( frq pv N )
+	    \ Calculate fvco
+	    swap over m* ( frq N pv*N . )
+	    pick 3 1 ( frq N pv*N . frq 1 )
+	    m*/ ( frq N fvco )
+	    2dup S14_FVCO 2!
+	    \ 2dup d. cr
+	    2dup S14_FVCOL D< if
+		2drop 
+	    else
+		S14_FVCOH  D< if
+		    \ ." Found! "
+		    leave
+		then
+	    then ( frq N )
+	    \ Update N
+	    dup 6 < if
+		1+
+	    else
+		2 +
+	    then	    
+	0 +loop ( frq N )
+	dup 127 < if
+	    \ It means that the proper value was found!
+	    leave
+	then
+    loop ( frq N )
+    S14_N0 ! ( frq )
+    drop ( )
+    \ Calculate M=FVCO/FREF to get the value properly scaled, multiply FVCO first by 1<<18)
+    S14_FVCO 2@ 1 12 lshift 0 ud* ( )
+    S14_FREF 2@ ud/ ( )
+    \ Calculated M is in UDres
+    \ Older words must be 0
+    UDres 2@ d0= not if
+	." M is too big "
+	throw 86
+    then
+    UDres 2 cells + 2@ ( M . )
+    ffffff. 2over d< if
+	." M is too big "
+	throw 86
+    then
+    drop ( M ) \ Discard higher word of M
+    dup S14_M0 !
+    \ So now we are ready to write the results, copying other settings from channel 0
+    S14_CP0 @ 6 lshift
+    over 7e0000 and 17 rshift or
+    3 swap FMS14Q_wr ( M )
+    dup 9 rshift ff and
+    7 swap FMS14Q_wr ( M )
+    dup 1 rshift ff and
+    b swap FMS14Q_wr ( M )
+    dup 1 and 7 lshift
+    S14_N0 @ 7f and or
+    f swap FMS14Q_wr ( M )
+    14 FMS14Q_rd 1f and
+    S14_P0 @ 6 lshift or
+    swap 800000 and 17 5 - rshift or    
+    17 swap FMS14Q_wr ( ) \ r20->r23
+    \ Now toggle the FSEL bits
+    12 FSM14Q_rd
+    dup e7 and
+    12 swap FSM14Q_wr
+    18 or
+    12 swap FSM14Q_wr
 ;    
 
 \ Procedures to control the clock matrix
