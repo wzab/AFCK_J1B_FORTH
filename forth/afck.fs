@@ -252,6 +252,18 @@ decimal
 212500000 constant S14_FOUT0
 1950 1000000 um* 2constant S14_FVCOL
 2600 1000000 um* 2constant S14_FVCOH
+decimal
+: FMS14Q_sim_read ( -- )
+    \ Read settings for config 0
+    4874232 S14_M0 ! 10 S14_N0 !
+    S14_FOUT0 1 12 lshift UM* ( fout0*[1<<18] )
+    S14_N0 @ S14_M0 @ m*/ ( fref0 . )
+    S14_FREF 2! ( )
+    \ Print results
+    ." S14_M0*2^18=" S14_M0 @ .
+    ." S14_N0=" S14_N0 @ .
+    ." S14_FREF0=" S14_FREF 2@ d.
+;
 hex
 : FMS14Q_read_setgs ( -- )
     \ Read settings for config 0
@@ -377,7 +389,7 @@ hex
 : FMS14Q_SetFrq ( frq -- )
     FMS14Q_read_setgs
     FMS14Q_calc_setgs
-    FMS14@_write_setgs
+    FMS14Q_write_setgs
 ;
 
 
