@@ -256,7 +256,7 @@ decimal
 : FMS14Q_sim_read ( -- )
     \ Read settings for config 0
     4874232 S14_M0 ! 10 S14_N0 !
-    S14_FOUT0 1 12 lshift UM* ( fout0*[1<<18] )
+    S14_FOUT0 1 18 lshift UM* ( fout0*[1<<18] )
     S14_N0 @ S14_M0 @ m*/ ( fref0 . )
     S14_FREF 2! ( )
     \ Print results
