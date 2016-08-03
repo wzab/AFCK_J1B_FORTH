@@ -284,7 +284,7 @@ hex
 	i S14_P0 !
 	2 ( frq N )
 	1 0 do
-	    S14_PVs S14_P0 @ + c@ dup S14_P0V ! ( frq N pv )
+	    S14_PVs S14_P0 @ cells + @ dup S14_P0V ! ( frq N pv )
 	    swap ( frq pv N )
 	    ." a:" .s cr
 	    126 over < if
