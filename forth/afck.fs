@@ -148,7 +148,6 @@ decimal
 	132 throw
     then
     S5_FXTAL ! ( frq )
-
     \ Now we should scan possible N1 and HSDIV vals, finding the best matched settings
     6 0 do
 	s5_hsdvs i cells + @ S5_HSDIV !
@@ -244,15 +243,15 @@ decimal
 variable S14_CP0
 variable S14_N0
 variable S14_M0 \ It is stored multiplied by 1 << 18
-create S14_PVs 1 c, 2 c, 4 c, 5 c,
+create S14_PVs 1 , 2 , 4 , 5 ,
 variable S14_P0
 variable S14_P0V
 2variable S14_FVCO
 2variable S14_FREF
 decimal
 212500000 constant S14_FOUT0
-decimal 1950 1000000 um* 2constant S14_FVCOL
-decimal 2600 1000000 um* 2constant S14_FVCOH
+1950 1000000 um* 2constant S14_FVCOL
+2600 1000000 um* 2constant S14_FVCOH
 hex
 : FMS14Q_SetFrq ( frq -- )
     \ Read settings for config 0
@@ -280,7 +279,7 @@ hex
     ." S14_N0=" S14_N0 @ .
     ." S14_FREF0=" S14_FREF 2@ d.
     \ Now we find the right divisor
-    3 0 do ( frq )
+    4 0 do ( frq )
 	\ Get PV
 	i S14_P0 !
 	2 ( frq N )
@@ -319,6 +318,7 @@ hex
 	    \ It means that the proper value was found!
 	    leave
 	then
+	.s
     loop ( frq N )
     S14_N0 ! ( frq )
     drop ( )
