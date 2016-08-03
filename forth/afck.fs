@@ -282,20 +282,21 @@ hex
     4 0 do ( frq )
 	\ Get PV
 	i S14_P0 !
-	2 ( frq N )
-	1 0 do
-	    S14_PVs S14_P0 @ cells + @ dup S14_P0V ! ( frq N pv )
-	    swap ( frq pv N )
+	2 S14_N0 !
+	1 0 do ( frq )
+	    S14_PVs S14_P0 @ cells + @ dup S14_P0V ! ( frq pv )
+	    S14_N0 @ ( frq pv N )
 	    ." a:" .s cr
-	    126 over < if
+	    7e over < if
+		drop drop
 		leave
 	    then ( frq pv N )
 	    \ Calculate fvco
-	    swap over m* ( frq N pv*N . )
+	    m* ( frq pv*N . )
 	    ." b:" .s cr
-	    3 pick 1 ( frq N pv*N . frq 1 )
+	    2 pick 1 ( frq pv*N . frq 1 )
 	    ." c:" .s cr
-	    m*/ ( frq N fvco . )
+	    m*/ ( frq fvco . )
 	    ." d:" .s cr
 	    2dup S14_FVCO 2!
 	    \ 2dup d. cr
@@ -306,13 +307,15 @@ hex
 		    ." Found! "
 		    leave
 		then
-	    then ( frq N )
+	    then ( frq )
 	    \ Update N
+	    S14_N0 @
 	    dup 6 < if
 		1+
 	    else
 		2 +
-	    then	    
+	    then
+	    S14_N0 !
 	0 +loop ( frq N )
 	dup 127 < if
 	    \ It means that the proper value was found!
