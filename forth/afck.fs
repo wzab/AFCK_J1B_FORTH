@@ -253,32 +253,34 @@ decimal
 1950 1000000 um* 2constant S14_FVCOL
 2600 1000000 um* 2constant S14_FVCOH
 hex
-: FMS14Q_SetFrq ( frq -- )
+: FMS14Q_read_setgs ( -- )
     \ Read settings for config 0
-    0 FMS14Q_rd ( frq r0 )
+    0 FMS14Q_rd ( r0 )
     dup 6 rshift S14_CP0 !
     3f and 11 lshift S14_M0 !
-    4 FMS14Q_rd ( frq r4 )
+    4 FMS14Q_rd ( r4 )
     9 lshift S14_M0 @ or S14_M0 !
-    8 FMS14Q_rd ( frq r8 )
+    8 FMS14Q_rd ( r8 )
     1 lshift S14_M0 @ or S14_M0 !
-    c FMS14Q_rd ( frq r12 )
+    c FMS14Q_rd ( r12 )
     dup 7 rshift S14_M0 @ or S14_M0 !
     7f and S14_N0 !
-    14 FMS14Q_rd ( frq r20 )
-    dup 6 rshift ( frq r20 P0 )
+    14 FMS14Q_rd ( r20 )
+    dup 6 rshift ( r20 P0 )
     \ Translate P0 into P0V
     S14_PVs + c@ S14_P0V !
     20 and 17 5 - lshift S14_M0 @ or S14_M0 !
     \ Calculate FREF0 ( 18 in hex is 12 !!!)
-    S14_FOUT0 1 12 lshift UM* ( frq fout0*[1<<18] )
-    S14_N0 @ S14_M0 @ m*/ ( frq fref0 . )
-    S14_FREF 2! ( frq )
+    S14_FOUT0 1 12 lshift UM* ( fout0*[1<<18] )
+    S14_N0 @ S14_M0 @ m*/ ( fref0 . )
+    S14_FREF 2! ( )
     \ Print results
     ." S14_M0*2^18=" S14_M0 @ .
     ." S14_N0=" S14_N0 @ .
     ." S14_FREF0=" S14_FREF 2@ d.
-    \ Now we find the right divisor
+;
+: FMS14Q_calc_setgs ( frq )
+\ Now we find the right divisor
     4 0 do ( frq )
 	\ Get PV
 	i S14_P0 !
@@ -289,7 +291,7 @@ hex
 	    ." a:" .s cr
 	    7e over < if
 		drop drop
-		leave
+		leave ( frq ) 
 	    then ( frq pv N )
 	    \ Calculate fvco
 	    m* ( frq pv*N . )
@@ -317,14 +319,12 @@ hex
 	    then
 	    S14_N0 !
 	0 +loop ( frq N )
-	dup 127 < if
+	S14_N0 @ 127 < if
 	    \ It means that the proper value was found!
 	    leave
 	then
 	.s
-    loop ( frq N )
-    S14_N0 ! ( frq )
-    drop ( )
+    loop ( frq )
     \ Calculate M=FVCO/FREF to get the value properly scaled, multiply FVCO first by 1<<18)
     S14_FVCO 2@ 
     2dup ." fvco=" d.
@@ -340,6 +340,9 @@ hex
     2dup ." M=" d.
     drop
     dup S14_M0 !
+;
+
+: FMS14Q_write_setgs
     \ So now we are ready to write the results, copying other settings from channel 0
     S14_CP0 @ 6 lshift
     over 7e0000 and 17 rshift or
@@ -370,6 +373,13 @@ hex
     12 swap FMS14Q_wr
     ." o8 " depth .
 ;
+
+: FMS14Q_SetFrq ( frq -- )
+    FMS14Q_read_setgs
+    FMS14Q_calc_setgs
+    FMS14@_write_setgs
+;
+
 
 \ Procedures to control the clock matrix
 hex
