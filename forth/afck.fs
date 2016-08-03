@@ -228,7 +228,54 @@ hex
     Si57x_write_setgs
     Si57x_old_mux @ I2C_MUX i2c_wr1
 ;    
+
 decimal
+\ Procedures to control the clock generator in the FM-S14 FMC board
+110 constant FMS14Q_ADR
+: FMS14Q_wr ( addr val -- )
+    FMS14Q_ADR I2C_ind_wr
+;
+
+: FMS14Q_rd ( addr -- val )
+    FMS14Q_ADR I2C_ind_rd
+;
+
+\ Variables
+variable S14_CP0
+variable S14_N0
+variable S14_M0 \ It is stored multiplied by 1 << 18
+create S14_PVs 1 c, 2 c, 4 c, 5 c,
+variable S14_P0V
+2variable S14_FREF
+decimal
+212500000 constant S14_FOUT0 
+hex
+: FMS14Q_SetFrq ( frq -- )
+    \ Read settings for config 0
+    0 FMS14Q_rd ( frq r0 )
+    dup 6 rshift S14_CP0 !
+    3f and 11 lshift S14_M0 !
+    4 FMS14Q_rd ( frq r4 )
+    9 lshift S14_M0 @ or S14_M0 !
+    8 FMS14Q_rd ( frq r8 )
+    1 lshift S14_M0 @ or S14_M0 !
+    c FMS14Q_rd ( frq r12 )
+    dup 7 rshift S14_M0 @ or S14_M0 !
+    7f and S14_N0 !
+    14 FMS14Q_rd ( frq r20 )
+    dup 6 rshift ( frq r20 P0 )
+    \ Translate P0 into P0V
+    S14_PVs + c@ S14_P0V !
+    20 and 23 5 - lshift S14_M0 @ or S14_M0 !
+    \ Calculate FREF0
+    S14_FOUT0 1 18 lshift UM* ( frq fout0*[1<<18] )
+    S14_N0 @ S14_M0 @ m*/ ( frq fref0 . )
+    S14_FREF 2! ( frq )
+    \ Print results
+    ." S14_M0*2^18=" S14_M0 @ .
+    ." S14_N0=" S14_N0 @ .
+    ." S14_FREF0=" S14_FREF 2@ d.    
+;    
 
 \ Procedures to control the clock matrix
 hex
