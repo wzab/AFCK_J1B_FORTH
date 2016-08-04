@@ -1,5 +1,9 @@
 #!/usr/bin/python
-fin=open("nuc.hex","r")
+# Written by Wojciech M. Zabolotny ( wzab01<at>gmail.com ) 2.08.2016
+# This is a PUBLIC DOMAIN file (or licensed under Creative Commons CC0 license)
+# whatever better fits your needs
+# Memory dump converter for J1B Forth CPU (written by James Bowman)
+fin=open(argv[1],"r")
 dta=fin.readlines()
 n=len(dta);
 print n

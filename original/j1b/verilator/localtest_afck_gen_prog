@@ -8,7 +8,7 @@ make
 # obj_dir/Vj1a ../build/nuc.hex
 # # grep 1,405,006,117,752,879,898,543,142,606,244,511,569,936,384,000,000,000
 
-#echo |
+echo |
 python shell.py -p ../ -p ../../common -p ../../anstests/ -p ../../../forth \
 -e '#noverbose' swapforth.fs \
 qmath.fs i2c.fs afck.fs mem_dump.fs

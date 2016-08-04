@@ -93,5 +93,6 @@ module j1b(input wire clk,
 	   $fclose(fout);
       end
    end
+
 endmodule
 
