@@ -39,16 +39,17 @@ end uart;
 
 architecture rtl of uart is
 
-  signal rcv_div                                  : integer range 0 to 23;  -- Used to calculate the next sampling
+  signal rcv_div                       : integer range 0 to 23;  -- Used to calculate the next sampling
                                         -- moment in the receiver
-  signal brg_cnt                                  : integer range 0 to brg_div;
-  signal tx_div                                   : integer range 0 to 15;
-  signal send_cntr, rcv_cntr                      : integer range 0 to 9;
-  signal rx_clk_en, tx_clk_en                     : std_logic;
-  signal s_tx_empty, rx_in, rx_sampled, s_rx_full : std_logic;
-  signal rx_reg, tx_reg                           : std_logic_vector(7 downto 0);
-  signal smpl                                     : std_logic_vector(1 downto 0);
-  
+  signal brg_cnt                       : integer range 0 to brg_div;
+  signal tx_div                        : integer range 0 to 15;
+  signal send_cntr, rcv_cntr           : integer range 0 to 9;
+  signal rx_clk_en, tx_clk_en          : std_logic;
+  signal s_rx_full                     : std_logic                    := '0';
+  signal s_tx_empty, rx_in, rx_sampled : std_logic                    := '1';
+  signal rx_reg, tx_reg                : std_logic_vector(7 downto 0);
+  signal smpl                          : std_logic_vector(1 downto 0) := (others => '1');
+
 begin  -- rtl
 
   tx_empty <= s_tx_empty;
@@ -89,7 +90,7 @@ begin  -- rtl
       tx         <= '1';
       send_cntr  <= 0;
       s_tx_empty <= '1';
-      tx_reg <= (others => '0');
+      tx_reg     <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       if tx_wr = '1' then
         tx_reg     <= din;
@@ -120,7 +121,8 @@ begin  -- rtl
   rcv_smpl : process (clk, nrst)
   begin  -- process rcv_smpl
     if nrst = '0' then                  -- asynchronous reset (active low)
-      smpl <= (others => '1');
+      smpl       <= (others => '1');
+      rx_sampled <= '1';
     elsif clk'event and clk = '1' then  -- rising clock edge
       if rx_clk_en = '1' then
         smpl(1) <= smpl(0);
@@ -200,5 +202,5 @@ begin  -- rtl
       end if;
     end if;
   end process rcvr;
-  
+
 end rtl;
