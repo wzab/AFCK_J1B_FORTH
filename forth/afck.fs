@@ -300,18 +300,14 @@ hex
 	1 0 do ( frq )
 	    S14_PVs S14_P0 @ cells + @ dup S14_P0V ! ( frq pv )
 	    S14_N0 @ ( frq pv N )
-	    ." a:" .s cr
 	    7e over < if
 		drop drop
 		leave ( frq ) 
 	    then ( frq pv N )
 	    \ Calculate fvco
 	    m* ( frq pv*N . )
-	    ." b:" .s cr
 	    2 pick 1 ( frq pv*N . frq 1 )
-	    ." c:" .s cr
 	    m*/ ( frq fvco . )
-	    ." d:" .s cr
 	    2dup S14_FVCO 2!
 	    \ 2dup d. cr
 	    2dup S14_FVCOL D< if
@@ -330,7 +326,7 @@ hex
 		2 +
 	    then
 	    S14_N0 !
-	0 +loop ( frq N )
+	0 +loop ( frq )
 	S14_N0 @ 127 < if
 	    \ It means that the proper value was found!
 	    leave
@@ -350,8 +346,8 @@ hex
 	87 throw 
     then
     2dup ." M=" d.
-    drop
-    dup S14_M0 !
+    drop \ Drop higher word
+    S14_M0 !
 ;
 
 : FMS14Q_write_setgs
