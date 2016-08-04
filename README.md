@@ -7,3 +7,15 @@ after compilation of additional commands.
 
 The project reuses also the I2C controller available from OpenCores.
 
+# Usage
+
+Initialization of communication
+    AFCK_i2c_init
+Setting of the Si57x clock to 125MHz
+
+    4 bus_sel 125000000 Si57x_set_frq
+
+Setting of the clock 0 in FM-S14 in FMC1 to 130MHz
+
+    0 bus_sel 130000000 FMS14Q_SetFrq
+    
