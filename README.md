@@ -21,3 +21,6 @@ Setting of the clock 0 in FM-S14 in FMC1 to 130MHz
 
     0 bus_sel 130000000 FMS14Q_SetFrq
     
+Switching the clock matrix (input 15 routed to output 4)
+
+    4 bus_sel 15 4 ClkMtx_set_out
