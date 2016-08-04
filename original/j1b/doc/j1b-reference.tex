@@ -1,0 +1,454 @@
+%
+% j1b SwapForth manual
+%
+
+\input{../../doc/front.tex}
+
+\title{\LARGE \bf
+J1b\\
+SwapForth \\
+Reference
+}
+
+\begin{document}
+
+\maketitle
+
+%% copyrightpage
+\begingroup
+\footnotesize
+\parindent 0pt
+\parskip \baselineskip
+\textcopyright{} 2015, James Bowman \\
+All rights reserved
+
+\begin{framed}
+
+\underline{ANS Forth Compliance Label}
+
+J1b SwapForth is an ANS Forth System
+
+Providing names from the \wl{Core Extensions} word set \\
+Providing the \wl{Double-Number} word set \\
+Providing the \wl{Double-Number Extensions} word set \\
+Providing names from the \wl{Exception} word set \\
+Providing the \wl{Exception Extensions} word set \\
+Providing the \wl{Facility} word set \\
+Providing names from the \wl{Facility Extensions} word set \\
+Providing the \wl{String} word set \\
+Providing the \wl{Programming-Tools} word set \\
+Providing names from the \wl{Programming-Tools Extensions} word set
+
+\end{framed}
+
+\endgroup
+
+\thispagestyle{empty}
+\pagestyle{headings}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Getting started}
+
+% \begin{center}
+% \includegraphics[width=0.8\textwidth]{icestick-reva-front-2400.png}
+% \end{center}
+
+J1b SwapForth is a 32-bit version of SwapForth,
+intended as an interactive Forth system using very little logic and RAM.
+% The system currently fits on a Lattice iCE40HX-1k FPGA.
+\index{FPGA}
+The J1b and peripherals use 1200 logic elements.
+SwapForth uses 10.5 Kbytes of RAM,
+leaving about 22 Kbytes for the application. \index{RAM}
+
+After installing the Papilio
+tools, you can run on a
+Papilio DUO
+like this
+
+\begin{framed}
+\begin{Verbatim}
+  git clone git@github.com:jamesbowman/swapforth.git
+  cd swapforth/j1b
+  papilio-prog -v -f xilinx/j1-papilioduo.bit
+  python shell.py -h /dev/ttyUSB0
+\end{Verbatim}
+\end{framed}
+
+\noindent
+(where \mach{/dev/ttyUSB0} is the appropriate port your DUO was assigned).
+You should see something like
+
+\begin{framed}
+\begin{Verbatim}
+  Contacting... established
+  Loaded 299 words
+  >
+\end{Verbatim}
+\end{framed}
+
+And you can now try the usual Forth things, e.g.
+
+\begin{framed}
+\begin{Verbatim}[commandchars=\\\{\}]
+\underline{\textbf{1 2 + .}}
+3   ok
+\end{Verbatim}
+\end{framed}
+
+There is a complete 
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm}{core ANS-compatible Forth system}
+running on the board, including a compiler.
+
+\section{Some demos} \index{demos}
+
+\input{../../doc/easter.tex}
+
+\section{Building from Scratch}
+
+After installing the Xilinx tools, run
+
+\begin{Verbatim}
+rm build/*
+make -C xilinx
+\end{Verbatim}
+
+\noindent
+This will produce \mach{j1-papilioduo.bit} - but it only contains the very bare-bones system;
+the rest of SwapForth still needs to be compiled.
+To do this, load \mach{j1-papilioduo.bit} and start the shell:
+
+\begin{framed}
+\begin{Verbatim}
+  $ papilio-prog -v -f xilinx/j1-papilioduo.bit
+  $ python shell.py -h /dev/ttyUSB0 -p ../common/
+  Contacting... established
+  Loaded 127 words
+  >
+\end{Verbatim}
+\end{framed}
+
+Then compile the rest of SwapForth and write the finished executable with these commands:
+
+\begin{framed}
+\begin{Verbatim}
+  #include swapforth.fs
+  #flash build/nuc.hex
+  #bye
+\end{Verbatim}
+\end{framed}
+
+Now run \mach{make -C xilinx} again - this compiles an FPGA image with the complete code base built-in.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Available Words}
+
+\section{ANS Core Words} \index{ANS}
+
+J1b SwapForth implements most of the core ANS 94 Forth standard.
+Implemented words are:
+
+\input{../../doc/core.tex}
+
+\noindent
+J1b SwapForth also implements the following standard words:
+
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.0170}{\wordidx{-trailing}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0200}{\wordidx{.(}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0210}{\wordidx{.r}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.1.0220}{\wordidx{.s}}
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.0245}{\wordidx{/string}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0260}{\wordidx{0<>}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0280}{\wordidx{0>}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0340}{\wordidx{2>r}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.0360}{\wordidx{2constant}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.0390}{\wordidx{2literal}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0410}{\wordidx{2r>}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0415}{\wordidx{2r@}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.0440}{\wordidx{2variable}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0455}{\wordidx{:noname}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0500}{\wordidx{<>}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.1.0600}{\wordidx{?}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0620}{\wordidx{?do}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0700}{\wordidx{again}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.2.0702}{\wordidx{ahead}}
+\href{http://forth.sourceforge.net/std/dpans/dpans10.htm#10.6.1.0742}{\wordidx{at-xy}}
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.0780}{\wordidx{blank}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0855}{\wordidx{c"}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0873}{\wordidx{case}}
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.0910}{\wordidx{cmove}}
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.0920}{\wordidx{cmove>}}
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.0935}{\wordidx{compare}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0945}{\wordidx{compile,}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.0970}{\wordidx{convert}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.2.1015}{\wordidx{cs-pick}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.2.1020}{\wordidx{cs-roll}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1040}{\wordidx{d+}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1050}{\wordidx{d-}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1060}{\wordidx{d.}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1070}{\wordidx{d.r}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1075}{\wordidx{d0<}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1080}{\wordidx{d0=}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1090}{\wordidx{d2*}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1100}{\wordidx{d2/}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1110}{\wordidx{d<}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1120}{\wordidx{d=}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1140}{\wordidx{d>s}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1160}{\wordidx{dabs}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1210}{\wordidx{dmax}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1220}{\wordidx{dmin}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1230}{\wordidx{dnegate}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.1.1280}{\wordidx{dump}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1342}{\wordidx{endcase}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1343}{\wordidx{endof}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1350}{\wordidx{erase}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1485}{\wordidx{false}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1660}{\wordidx{hex}}
+\href{http://forth.sourceforge.net/std/dpans/dpans10.htm#10.6.1.1755}{\wordidx{key?}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1820}{\wordidx{m*/}}
+\href{http://forth.sourceforge.net/std/dpans/dpans8.htm#8.6.1.1830}{\wordidx{m+}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1850}{\wordidx{marker}}
+\href{http://forth.sourceforge.net/std/dpans/dpans10.htm#10.6.2.1905}{\wordidx{ms}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1930}{\wordidx{nip}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.1950}{\wordidx{of}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2000}{\wordidx{pad}}
+\href{http://forth.sourceforge.net/std/dpans/dpans10.htm#10.6.1.2005}{\wordidx{page}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2008}{\wordidx{parse}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2030}{\wordidx{pick}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2125}{\wordidx{refill}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2148}{\wordidx{restore-input}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2150}{\wordidx{roll}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2182}{\wordidx{save-input}}
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.2191}{\wordidx{search}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.1.2194}{\wordidx{see}}
+\href{http://forth.sourceforge.net/std/dpans/dpans17.htm#17.6.1.2212}{\wordidx{sliteral}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2218}{\wordidx{source-id}}
+\href{http://forth.sourceforge.net/std/dpans/dpans9.htm#9.6.1.2275}{\wordidx{throw}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2295}{\wordidx{to}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2298}{\wordidx{true}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2300}{\wordidx{tuck}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2330}{\wordidx{u.r}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2350}{\wordidx{u>}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2395}{\wordidx{unused}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2405}{\wordidx{value}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2440}{\wordidx{within}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.1.2465}{\wordidx{words}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2530}{\wordidx{[compile]}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.2.2531}{\wordidx{[else]}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.2.2532}{\wordidx{[if]}}
+\href{http://forth.sourceforge.net/std/dpans/dpans15.htm#15.6.2.2533}{\wordidx{[then]}}
+\href{http://forth.sourceforge.net/std/dpans/dpans6.htm#6.2.2535}{\wordidx{\textbackslash}}
+
+\noindent
+Double numbers are supported using the standard \mach{.} suffix.
+The Forth 200x number prefixes are supported: \index{Forth 200x}
+\mach{\$} for hex,
+\mach{\#} for decimal,
+\mach{\%} for binary, and \mach{'c'} for character literals.
+\href{http://www.forth200x.org/parse-name.html}{\wordidx{parse-name}}
+is also implemented.
+
+\newpage
+\section{Additional Words}
+
+The following words are not standard.
+Some are traditional Forth words, others are specific to the J1b SwapForth implementation.
+
+\vspace{10pt}
+
+\longworddef{.x}{( n -- )}{display n as an 8-digit hex number}
+\longworddef{-rot}{( x1 x2 x3 -- x3 x1 x2 )}{rotate the top three stack entries}
+\longworddef{bounds}{( start cnt -- start+cnt start )}{prepare to loop on a range}
+\longworddef{forth}{( -- a )}{variable: most recent dictionary entry}
+\longworddef{io!}{( x a -- )}{store \mach{x} to IO port \mach{a}}
+\longworddef{io@}{( a -- x )}{fetch from IO port \mach{a}}
+\longworddef{new}{( -- )}{restore code and data pointers to the power-up state}
+\longworddef{s,}{( a u -- )}{add the \mach{u}-character string \mach{a} to the data space}
+\longworddef{serialize}{( -- )}{display all of current memory in base 36}
+% \worddef{sfind}{( dir pin -- )}{Like standard word \mach{find}, but uses a
+\longworddef{tth}{( -- a )}{variable: tethered mode}
+\longworddef{w!}{( -- a )}{16-bit store}
+\longworddef{w@}{( -- a )}{16-bit signed fetch}
+\longworddef{uw@}{( -- a )}{16-bit unsigned fetch}
+\longworddef{pinMode}{( mode pin -- )}{Set \mach{pin} to either output or input}
+
+\chapter{Using SwapForth}
+
+\section{Raw UART access}
+
+At boot, SwapForth listens for a command on the UART. \index{UART}
+Connection parameters are 921600 8N1, and any terminal program should be able to connect.
+\index{DTR} \index{reset}
+Note that the hardware board uses DTR as a reset signal, so you should make sure that it is set OFF by the terminal program:
+
+\begin{verbatim}
+$ miniterm.py --dtr=0 /dev/ttyUSB5 921600
+--- Miniterm on /dev/ttyUSB5: 921600,8,N,1 ---
+--- Quit: Ctrl+]  |  Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H ---
+--- forcing DTR inactive
+
+  ok
+  ok
+  ok
+\end{verbatim}
+
+% Raw UART access does not provide the conveniences of the SwapForth shell.
+
+% \section{\mach{THROW} codes} \index{\mach{THROW} codes}
+% 
+% SwapForth uses standard ANS throw codes
+% (section 9.3.5 of the ANS spec)
+% and reports the code in hex.
+% 
+% \vspace{10pt}
+% \begin{tabular}{ccl}
+% SwapForth code & ANS code & meaning \\
+% \hline
+% \mach{ffff} & -1 & \mach{ABORT} \\    \index{ffff@\mach{ffff}, throw code}
+% \mach{fff3} & -13 & undefined word \\ \index{fff3@\mach{fff3}, throw code}
+% \end{tabular}
+
+\input{../../doc/shell.tex}
+
+\chapter{Memory}
+
+\section{Memory map}
+
+The J1b SwapForth implementation uses 16 Kbytes of RAM for code, and 16 Kbytes data. \index{RAM}
+The standard Forth words access this RAM.
+Cells are 32-bits, and must be aligned to a 32-bit boundary.
+
+\newpage
+\section{Dictionary Layout} \index{dictionary}
+
+\vspace{10pt}
+\noindent
+\begin{bytefield}[endianness=big, bitwidth=2.0em]{16}
+  \bitheader{0-15} \\
+    \bitbox{15}{next pointer} & \bitbox{1}{\small{imm}} \\
+    \bitbox{8}{name$_1$} & \bitbox{8}{count} \\
+    \bitbox{16}{...} \\
+    \bitbox{8}{name$_n$} & \bitbox{8}{name$_{n-1}$} \\
+    \bitbox[lr]{16}{start of word's code} \\
+    \bitbox[lr]{16}{...} \\
+    \bitbox[lrb]{16}{} \\
+\end{bytefield}
+
+The SwapForth dictionary is a linked list;
+the variable \mach{forth} holds the start of this list.
+Each dictionary entry has the following fields:
+
+\begin{itemize}
+\item \textbf{next pointer} - address of the next dictionary entry, or zero for the last dictionary entry
+\item \textbf{imm} - immediate bit, set if the word is immediate
+\item \textbf{count} - length of the name, in characters, 1-31
+\item \textbf{name$_1$ - name$_n$} - characters in name. If the length of the name is even, then a padding byte is appended
+\end{itemize}
+
+\chapter{Papilio DUO Hardware interface}
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{PapilioDUO.png}
+\end{center}
+
+The J1a for Papilio DUO includes connections to the Papilio DUO IO pins.
+Access to peripherals is via the
+\mach{io@} and \mach{io!} words.
+Peripherals are port-mapped into a 16-bit IO address space.
+
+\newpage
+For example, to flash the onboard LED
+
+\begin{framed}
+\begin{Verbatim}
+: blink
+  OUTPUT 13 pinMode \ Set pin 13 to OUTPUT
+  0                 \ LED initially off
+  begin
+    dup 13 io!      \ write to LED
+    invert          \ flip LED state
+    200 ms          \ pause 1/5 of second
+  again
+;
+blink
+\end{Verbatim}
+\end{framed}
+
+\newpage
+\section{Port Map}
+\subsection{\$0000-\$036: IO pins}
+
+The read-write port at address \$0001 is for direct access to the 54 IO pins
+on the Papilio DUO header.
+Reading a port gives the current state of the pin.
+If the pin is set for OUTPUT,
+then writing 0 or 1 to the port sets the pin state.
+
+Note that pin direction is controlled by the corresponding registers at \$0100-\$136
+
+\subsection{\$0040: switch SW1}
+
+Reads the current state of the user switch, either 0 or 1.
+
+\begin{center}
+\includegraphics[width=0.1\textwidth]{switch-callout.png}
+\end{center}
+
+\subsection{\$0100-\$136: IO pin direction}
+
+Each port controls the direction of the corresponding IO pin.
+0 sets the pin to input, 1 means sets the pin to output.
+At boot all pins are inputs.
+The SwapForth words
+\mach{INPUT},
+\mach{OUTPUT} and
+\mach{pinMode}
+can be used to set the direction of pins, for example:
+
+\begin{framed}
+\begin{Verbatim}
+  OUTPUT 13 pinMode \ Set pin 13 to OUTPUT
+  INPUT 52 pinMode  \ Set pin 52 to INPUT
+\end{Verbatim}
+\end{framed}
+
+\subsection{\$1000: UART data}
+
+The read-write port at address \$1000 is for UART transmission or reception.
+Writing to the port starts transmission of a byte, reading the port returns
+the incoming byte.
+
+Standard words
+\wordidx{key}, \wordidx{key?} and \wordidx{emit}
+can be used to access this port.
+
+\vspace{10pt}
+\noindent
+\begin{bytefield}[endianness=big, bitwidth=1.0em]{32}
+  \bitheader{0-31} \\
+    \bitbox{24}{} &
+    \bitbox{8}{byte}
+\end{bytefield}
+
+\subsection{\$2000: UART status}
+
+Read-only port \$2000 contains the input signals from the
+UART.
+
+\vspace{10pt}
+\noindent
+\begin{bytefield}[endianness=big, bitwidth=2.0em]{16}
+  \bitheader{0-15} \\
+    \bitbox{14}{} &
+    \bitbox{1}{\tiny{UART\\key?}} &
+    \bitbox{1}{\tiny{UART\\busy}}
+\end{bytefield}
+
+\clearpage
+\addcontentsline{toc}{chapter}{Index}
+\printindex
+
+\end{document}

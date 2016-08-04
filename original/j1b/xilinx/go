@@ -1,0 +1,5 @@
+set -e
+
+# make clean
+make
+# trce -v 10 j1-papilioduo.ncd j1-papilioduo.pcf  -o j1-papilioduo.twr
