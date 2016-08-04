@@ -7,8 +7,8 @@
 hex
 \ Frequency counters 
 0100 constant FRQ0_CNT
-0101 constant FRQ0_CNT
-0102 constant FRQ0_CNT
+0101 constant FRQ1_CNT
+0102 constant FRQ2_CNT
 
 \ Output registers
 0180 constant OUT0_REG
