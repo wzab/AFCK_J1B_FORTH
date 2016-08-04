@@ -7,7 +7,7 @@
 -- License    : PUBLIC DOMAIN
 -- Company    : 
 -- Created    : 2015-05-03
--- Last update: 2016-08-03
+-- Last update: 2016-08-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -66,6 +66,7 @@ architecture beh of i2c_j1b_ctrl_top is
   signal clk_frq1 : std_logic_vector(31 downto 0);
   signal frq2_in  : std_logic;
   signal clk_frq2 : std_logic_vector(31 downto 0);
+  signal lpbck0, lpbck1, lpbck2, lpbck3 : std_logic_vector(31 downto 0);
 
 
 begin
@@ -105,7 +106,15 @@ begin
       uart_rx => uart_txd,
       clk_0   => frq0_in,
       clk_1   => frq1_in,
-      clk_2   => frq2_in
+      clk_2   => frq2_in,
+      out0    => lpbck0,
+      out1    => lpbck1,
+      out2    => lpbck2,
+      out3    => lpbck3,
+      inp0    => lpbck0,
+      inp1    => lpbck1,
+      inp2    => lpbck2,
+      inp3    => lpbck3
       );
 
 end architecture beh;

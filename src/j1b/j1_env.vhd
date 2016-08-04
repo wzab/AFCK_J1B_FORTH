@@ -7,7 +7,7 @@
 -- Company    :
 -- License    : BSD License
 -- Created    : 2016-07-07
--- Last update: 2016-08-03
+-- Last update: 2016-08-04
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ use work.ram_prog.all;
 
 entity j1_env is
   generic (
-    NUM_I2CS : integer := 5 );
+    NUM_I2CS : integer := 5);
   port (
     clk     : in    std_logic;
     rst_n   : in    std_logic;
@@ -40,7 +40,15 @@ entity j1_env is
     uart_rx : in    std_logic;
     clk_0   : in    std_logic;
     clk_1   : in    std_logic;
-    clk_2   : in    std_logic
+    clk_2   : in    std_logic;
+    out0    : out   std_logic_vector(31 downto 0);
+    out1    : out   std_logic_vector(31 downto 0);
+    out2    : out   std_logic_vector(31 downto 0);
+    out3    : out   std_logic_vector(31 downto 0);
+    inp0    : in    std_logic_vector(31 downto 0);
+    inp1    : in    std_logic_vector(31 downto 0);
+    inp2    : in    std_logic_vector(31 downto 0);
+    inp3    : in    std_logic_vector(31 downto 0)
     );
 
 end entity j1_env;
@@ -48,6 +56,30 @@ end entity j1_env;
 -------------------------------------------------------------------------------
 
 architecture test of j1_env is
+
+  -- Constants for address definitions
+  -- (Please note, that if you modify them, the Forth procedures
+  -- may need readjsutment!
+
+  constant UART_DATA   : integer := 16#1000#;
+  constant UART_STATUS : integer := 16#2000#;
+  constant FRQ_CNT0    : integer := 16#100#;
+  constant FRQ_CNT1    : integer := 16#101#;
+  constant FRQ_CNT2    : integer := 16#102#;
+  constant OUT0_ADDR   : integer := 16#180#;
+  constant OUT1_ADDR   : integer := 16#181#;
+  constant OUT2_ADDR   : integer := 16#182#;
+  constant OUT3_ADDR   : integer := 16#183#;
+  constant INP0_ADDR   : integer := 16#190#;
+  constant INP1_ADDR   : integer := 16#191#;
+  constant INP2_ADDR   : integer := 16#192#;
+  constant INP3_ADDR   : integer := 16#193#;
+  constant I2C_BUS_SEL : integer := 16#201#;
+
+  -- Access to the WB controller - two 256-word pages.
+  constant JWB_REGS_PAGE : integer := 16#60#;
+  constant JWB_DATA_PAGE : integer := 16#61#;
+
 
   component j1 is
     generic (
@@ -124,7 +156,7 @@ architecture test of j1_env is
       frq_in  : in  std_logic;
       frq_out : out std_logic_vector(CNT_LENGTH-1 downto 0));
   end component frq_counter;
-  
+
 -- component ports
   signal uart_rd, uart_wr                 : std_logic;
   signal uart_din, uart_dout              : std_logic_vector(7 downto 0);
@@ -139,10 +171,10 @@ architecture test of j1_env is
   signal io_addr, io_addr_d               : unsigned(15 downto 0);
   signal mem_wr                           : std_logic;
   signal io_ready                         : std_logic;
-  signal resetq                           : std_logic := '0';
+  signal resetq                           : std_logic                     := '0';
   signal sv_mem_addr                      : std_logic_vector(15 downto 0) := (others => '0');
 
-  
+
   -- Internal Wishbone controller and bus
   signal wb_test_dout                 : std_logic_vector(31 downto 0);
   signal wb_addr, wb_addr_d, wb_ready : std_logic;
@@ -168,8 +200,8 @@ architecture test of j1_env is
   signal wbt_do1_o : std_logic_vector(31 downto 0);
   signal wbt_di1_i : std_logic_vector(31 downto 0);
 
-  signal read_req_1, read_req_2                           : std_logic;
-  signal data_valid_1, data_valid_2                       : std_logic;
+  signal read_req_1, read_req_2                       : std_logic;
+  signal data_valid_1, data_valid_2                   : std_logic;
   signal scl_o, scl_oen, sda_o, sda_oen, scl_i, sda_i : std_logic;
 
   -- clock
@@ -184,33 +216,26 @@ architecture test of j1_env is
   signal ram_data     : std_logic_vector(31 downto 0);
   signal code_sel     : std_logic;
 
-  -- Constants for address definitions
-  -- (Please note, that if you modify them, the Forth procedures
-  -- may need readjsutment!
-  
-  constant UART_DATA : integer := 16#1000#;
-  constant UART_STATUS : integer := 16#2000#;
-  constant FRQ_CNT0 : integer := 16#100#;  
-  constant FRQ_CNT1 : integer := 16#101#;  
-  constant FRQ_CNT2 : integer := 16#102#;  
-  constant I2C_BUS_SEL : integer := 16#201#;
 
-  -- Access to the WB controller - two 256-word pages.
-  constant JWB_REGS_PAGE : integer := 16#60#;
-  constant JWB_DATA_PAGE : integer := 16#61#;
-  
-  
   -- Reset counter
   signal reset_count : unsigned(31 downto 0) := (others => '0');
 
   -- Signals for I2C bus selector
   signal i2c_sel_reg : std_logic_vector(7 downto 0) := (others => '0');
-  signal i2c_sel : integer;
-  
+  signal i2c_sel     : integer;
+
+  -- Signals for output registers
+  signal out0_reg, out1_reg, out2_reg, out3_reg : std_logic_vector(31 downto 0);
+
+
 begin  -- architecture test
-  
+
   i2c_sel <= to_integer(unsigned(i2c_sel_reg));
-  
+  out0    <= out0_reg;
+  out1    <= out1_reg;
+  out2    <= out2_reg;
+  out3    <= out3_reg;
+
   P1 : process (clk, rst_n) is
   begin  -- process P1
     if rst_n = '0' then                 -- asynchronous reset (active high)
@@ -270,22 +295,33 @@ begin  -- architecture test
   end process;
 
 
-  uart_wr  <= '1' when io_wr_d = '1' and io_addr_d = to_unsigned(UART_DATA,16) else '0';
-  uart_rd  <= '1' when io_rd_d = '1' and io_addr_d = to_unsigned(UART_DATA,16) else '0';
+  uart_wr  <= '1' when io_wr_d = '1' and io_addr_d = to_unsigned(UART_DATA, 16) else '0';
+  uart_rd  <= '1' when io_rd_d = '1' and io_addr_d = to_unsigned(UART_DATA, 16) else '0';
   uart_din <= dout_d(7 downto 0);
 
   -- Writing to simple registers defigned in the entity
   process (clk) is
   begin  -- process
-    if clk'event and clk = '1' then  -- rising clock edge
-      if io_wr_d = '1' and io_addr_d = to_unsigned(I2C_BUS_SEL,16) then        
-        i2c_sel_reg <= dout_d(7 downto 0);
+    if clk'event and clk = '1' then     -- rising clock edge
+      if io_wr_d = '1' then
+        case to_integer(io_addr_d) is
+          when I2C_BUS_SEL => 
+            i2c_sel_reg <= dout_d(7 downto 0);
+          when OUT0_ADDR =>
+            out0_reg <= dout_d;
+          when OUT1_ADDR =>
+            out1_reg <= dout_d;
+          when OUT2_ADDR =>
+            out2_reg <= dout_d;
+          when OUT3_ADDR =>
+            out3_reg <= dout_d;
+          when others => null;
+        end case;
       end if;
-      
     end if;
   end process;
 
-  
+
   i2c_master_top_1 : entity work.i2c_master_top
     generic map (
       ARST_LVL => '0')
@@ -309,7 +345,7 @@ begin  -- architecture test
       sda_padoen_o => sda_oen);
 
   -- I2C signals switch
-  
+
   --scl <= '0' when (scl_pad_o = '0') and (scl_padoen_o = '0') else 'Z';
   --sda <= '0' when (sda_pad_o = '0') and (sda_padoen_o = '0') else 'Z';
 
@@ -320,8 +356,8 @@ begin  -- architecture test
     for i in 0 to NUM_I2CS-1 loop
       if i = i2c_sel then
         if (scl_o = '0') and (scl_oen = '0') then
-          scl(i) <= '0' ;
-        else 
+          scl(i) <= '0';
+        else
           scl(i) <= 'Z';
         end if;
         if (sda_o = '0') and (sda_oen = '0') then
@@ -335,7 +371,7 @@ begin  -- architecture test
       end if;
     end loop;  -- i    
   end process;
-  
+
   wb_dat_i(31 downto 8) <= (others => '0');
 
 
@@ -381,12 +417,20 @@ begin  -- architecture test
       wb_ack_i     => wb_ack_i);
 
 
-  io_din <= x"000000" & uart_dout when io_addr_d = to_unsigned(UART_DATA,16) else
-            (0      => uart_ready, 1 => uart_dav, others => '0') when io_addr_d =to_unsigned(UART_STATUS,16) else
-            clk_frq0                                             when io_addr_d =to_unsigned(FRQ_CNT0,16) else
-            clk_frq1                                             when io_addr_d =to_unsigned(FRQ_CNT1,16) else
-            clk_frq2                                             when io_addr_d =to_unsigned(FRQ_CNT2,16) else
-            x"000000" & i2c_sel_reg                              when io_addr_d =to_unsigned(I2C_BUS_SEL,16) else
+  io_din <= x"000000" & uart_dout when io_addr_d = to_unsigned(UART_DATA, 16) else
+            (0      => uart_ready, 1 => uart_dav, others => '0') when io_addr_d = to_unsigned(UART_STATUS, 16) else
+            clk_frq0                                             when io_addr_d = to_unsigned(FRQ_CNT0, 16) else
+            clk_frq1                                             when io_addr_d = to_unsigned(FRQ_CNT1, 16) else
+            clk_frq2                                             when io_addr_d = to_unsigned(FRQ_CNT2, 16) else
+            out0_reg                                             when io_addr_d = to_unsigned(OUT0_ADDR, 16) else
+            out1_reg                                             when io_addr_d = to_unsigned(OUT1_ADDR, 16) else
+            out2_reg                                             when io_addr_d = to_unsigned(OUT2_ADDR, 16) else
+            out3_reg                                             when io_addr_d = to_unsigned(OUT3_ADDR, 16) else
+            inp0                                                 when io_addr_d = to_unsigned(INP0_ADDR, 16) else
+            inp1                                                 when io_addr_d = to_unsigned(INP1_ADDR, 16) else
+            inp2                                                 when io_addr_d = to_unsigned(INP2_ADDR, 16) else
+            inp3                                                 when io_addr_d = to_unsigned(INP3_ADDR, 16) else
+            x"000000" & i2c_sel_reg                              when io_addr_d = to_unsigned(I2C_BUS_SEL, 16) else
             jwb_dout                                             when (jwb_regs = '1' or jwb_data = '1') else
             (others => '0');
 

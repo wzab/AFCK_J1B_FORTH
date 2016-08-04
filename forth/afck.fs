@@ -3,7 +3,16 @@
 \ ( wzab01<at>gmail.com or wzab<at>ise.pw.edu.pl )
 \ It is available as PUBLIC DOMAIN or under Creative Commons CC0 License
 \
+
 hex
+0180 constant OUT0_REG
+0181 constant OUT1_REG
+0182 constant OUT2_REG
+0183 constant OUT3_REG
+0190 constant INP0_REG
+0191 constant INP1_REG
+0192 constant INP2_REG
+0193 constant INP3_REG
 0201 constant I2C_BUS_SEL 
 decimal
 
@@ -437,6 +446,26 @@ hex
     Si57x_old_mux @ I2C_MUX i2c_wr1
 ;
 decimal
+
+\ Procedure for reading the EUI from AT24MAC602
+9 buffer: EUI_buf
+hex 
+58 constant AT24MAC
+0c constant AT24MAC_i2c_sel
+
+: EUI_read
+    4 bus_sel
+    AT24MAC_i2c_sel I2C_MUX i2c_wr1
+    98 AT24MAC i2c_wr1
+    EUI_buf 8 AT24MAC i2c_rd
+;
+
+: .bytebuf ( addr count -- )
+    0 do ( addr )
+	dup i + c@ .
+    loop
+    drop ( )
+;
 
 \ Correct initialization of the I2C controller and I2C bus switch
 : AFCK_i2c_init
