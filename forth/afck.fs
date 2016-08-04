@@ -350,10 +350,11 @@ hex
     S14_M0 !
 ;
 
-: FMS14Q_write_setgs
+: FMS14Q_write_setgs ( -- )
     \ So now we are ready to write the results, copying other settings from channel 0
+    S14_M0 @
     S14_CP0 @ 6 lshift
-    over 7e0000 and 17 rshift or
+    over 7e0000 and 11 rshift or \ 17 in hex is 11 !
     3 swap FMS14Q_wr ( M )
     ." o1 " depth .
     dup 9 rshift ff and
@@ -435,3 +436,9 @@ hex
     Si57x_old_mux @ I2C_MUX i2c_wr1
 ;
 decimal
+
+\ Correct initialization of the I2C controller and I2C bus switch
+: AFCK_i2c_init
+4 bus_sel i2c_init I2C_MUX i2c_rd1 .
+;
+
