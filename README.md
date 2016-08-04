@@ -2,12 +2,18 @@
 This repository contains HDL anf forth sources for the Forth based system for AFCK board initialization and diagnostics. 
 Significant of this project is "swapforth" and J1B Forth CPU developed by James Bowman (https://github.com/jamesbowman/swapforth)
 
-I have ported J1B to VHDL (in https://github.com/wzab/swapforth ) and added the functionality to dump the porgram/data memory
-after compilation of additional commands.
+I have ported J1B to VHDL (in https://github.com/wzab/swapforth ) and added the functionality to dump the program/data memory
+after compilation of additional commands (words).
 
-The project reuses also the I2C controller available from OpenCores.
+The project uses also the I2C controller available from OpenCores ( http://opencores.org/project,i2c ).
 
-# Usage
+The project defines the small Forth CPU with program/data memory and some basic peripherials (UART for communication with 
+the operator, I2C controller connected via very simplified Wishbone controller, 4 output and 4 input ports for communication
+with the surrounding logic). The controller may be easily reused in other projects and extented. It should be trivial
+to adapt it for other I2C or SPI configurable FPGA based boards.
+It can be used to interactively control the AFCK board but also to define own procedures (words) performing complex configuration or diagnostic procedures.
+
+# Basic usage examples
 
 Initialization of communication
 
@@ -29,6 +35,24 @@ Switching the clock matrix (output 5 switched off)
 
     -1 7 ClkMtx_SetOut
     
+Reading the unique board identifier
+
+    EUI_read
+    
+After that, the identifier is placed in the EUI_buf buffer, from where it can be e.g. displayed (the first byte
+is the length of the buffer):
+
+    EUI_buf 9 .bytebuf
+    8 FC C2 3D 0 0 0 12 30  ok
+    
+It is also possible to transfer the identifier to two output ports, so that it can be used by the 
+surrounding logic (e.g. to create the board's MAC address)
+
+    : EUI_to_OUT0_OUT1
+       0 5 1 do 8 lshift EUI_buf i + C@ or loop OUT0_REG io!
+       0 9 5 do 8 lshift EUI_buf i + C@ or loop OUT1_REG io!
+    ;
+
 # Quick start
 
 After you clone the repository, you can build the firmware by running the build.sh script in the main directory.
@@ -63,5 +87,20 @@ In the original/j1b/verilator directory I have created the _localtest2_ and _loc
 They can be a good starting point for development of own words. You can put your words to the existing files or to the new one
 (and add it to the appropriate script).
 
-After your desired words are written and tested, you may want to create the hex file with their definitions. It can be done using the _localtest\_afck\_gen\_prog_ script. *( This script uses the feature that I have added to the James testbench - after reading from the io port 0x2345, the testbench dumps the memory contents to the mem_dump.hex file. This file is also available via a symlink from the _src/j1b_ directory, so you can easily use it to create the new _prog.vhd_ file for synthesis.)*
+After your desired words are written and tested, you may want to create the hex file with their definitions. It can be done using the _localtest\_afck\_gen\_prog_ script. This script uses the feature that I have added to the James testbench - after reading from the io port 0x2345, the testbench dumps the memory contents to the mem_dump.hex file. This file is also available via a symlink from the _src/j1b_ directory, so you can easily use it to create the new _prog.vhd_ file for synthesis.
+
+## How to make my procedure to be executed immediately after the FPGA is configured
+
+You can make your procedure to be executed right after FPGA is configured or J1B exits the reset state. To achieve that,
+you should simply define your procedure as the "cold" word.
+When the execution of your procedure is finished, swapforth enters normal interactive mode, so it is possible to provide
+both - initial configuration of the board and interactive debugging.
+
+## Possible modifications
+
+You may want to modify behavior of the swapforth. This may require changing the original files. For example you may
+want to use other communication channel. As long as you can imitate the original ( UART data in IO port 0x1000, and UART status in IO port 0x2000 with TX empty at bit 0 and RX full at bit 1) no changes are needed. Otherwise, you may need to modify
+the original files e.g. _original/j1b/nuc.fs (UART addresses are defined at the begining of that file), you may even reimplement "key", "key?" and "emit" words. Of course after that, you should rebuild the swapforth and recreate your memory images.
+
+# Known problems
 
