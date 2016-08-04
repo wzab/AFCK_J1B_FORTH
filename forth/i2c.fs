@@ -1,6 +1,5 @@
-hex
-6100 constant I2C_REGS 
 decimal
+$6100 constant I2C_REGS 
 
 : err_halt 
     dup .

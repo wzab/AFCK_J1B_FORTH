@@ -7,6 +7,7 @@
 \ In case of calculated double cell results, they are described as (e.g. for a0*b1):
 \ a0*b1 (MSW) . (LSW)
 \ All values are unsigned
+decimal
 
 4 cells buffer: UDres
 
@@ -92,19 +93,6 @@ constant cell_msb
     drop drop
 ;
 
-\ Buffers for testing the "un<' word
-hex 
-create x1 10 , 32 , 5 ,
-create x2 10 , 33 , 5 ,
-create x3 10 , 32 , 6 ,
-create x4 11 , 32 , 5 ,
-
-create z1 20000000 , 30000000 , 54000233 , 3533333 ,
-create z2 34045FC0 , 23440033 , 0 , 0 ,
-create z3 5FDD020 , 1E5DFFE7 , D4000233 , 3533333 ,
-create z4 1A022FE0 , 11A20019 , 80000000 , 0 ,
-decimal
-
 : ud* ( a0 a1 b0 b1 -- ) \ Result is placed in UDres in order q3 q2 q1 q0
     ( a0 a1 b0 b1 )
     0. 2dup UDres 2! UDres 2 cells + 2!
@@ -176,10 +164,9 @@ decimal
 ;
 
 : ud@ UDres 2@ swap UDres 2 cells + 2@ swap ;
-hex
-: test 2000000030000000. 5000000070000000. ud* ;
-
-: test2 ffffffffffffffff. 2dup ud* ;
+\ hex
+\ : test 2000000030000000. 5000000070000000. ud* ;
+\ : test2 ffffffffffffffff. 2dup ud* ;
 \ test
 \  2drop 2drop
 \ test2
