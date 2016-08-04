@@ -5,10 +5,18 @@
 \
 
 hex
+\ Frequency counters 
+0100 constant FRQ0_CNT
+0101 constant FRQ0_CNT
+0102 constant FRQ0_CNT
+
+\ Output registers
 0180 constant OUT0_REG
 0181 constant OUT1_REG
 0182 constant OUT2_REG
 0183 constant OUT3_REG
+
+\ Input pins
 0190 constant INP0_REG
 0191 constant INP1_REG
 0192 constant INP2_REG
@@ -227,7 +235,8 @@ hex
     87 40 Si57x_wr
 ;    
 
-: Si57x_set_frq ( frq -- )
+: Si57x_SetFrq ( frq -- )
+    4 bus_sel \ We must select the 4th bus
     \ Save old mux and set mux to access Si57x
     I2C_MUX i2c_rd1 Si57x_old_mux !
     I2C_MUX_Si57x I2C_MUX i2c_wr1
@@ -402,7 +411,7 @@ hex
 
 \ Procedures to control the clock matrix
 hex
-: ClkMtx_set_out ( n_in n_out -- )
+: ClkMtx_SetOut ( n_in n_out -- )
     over -1 < ( n_in n_out flag )
     2 pick f > or if
 	." n_in must be between -1 and 15 "
