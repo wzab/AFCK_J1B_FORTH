@@ -102,5 +102,10 @@ You may want to modify behavior of the swapforth. This may require changing the 
 want to use other communication channel. As long as you can imitate the original ( UART data in IO port 0x1000, and UART status in IO port 0x2000 with TX empty at bit 0 and RX full at bit 1) no changes are needed. Otherwise, you may need to modify
 the original files e.g. _original/j1b/nuc.fs (UART addresses are defined at the begining of that file), you may even reimplement "key", "key?" and "emit" words. Of course after that, you should rebuild the swapforth and recreate your memory images.
 
+Another thing, that you may want to modify is the "throw" word. E.g. you may want to transfer the value passed to the _throw_ word to one of _out_ ports.
+
 # Known problems
 
+Sometimes the I2C bus is in the "strange state" and after selection of the new bus it is impossible to communicate with I2C slaves. The problem usually disappears after a few attempts to read different slaves connected to different buses.
+This is however a real problem in case of the _cold_ word, which may get interrupted due to the I2C problem.
+We need a robust procedure for I2C buses initialization...
