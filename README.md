@@ -15,7 +15,7 @@ Initialization of communication
 
 Setting of the Si57x clock to 125MHz
 
-    4 bus_sel 125000000 Si57x_set_frq
+    125000000 Si57x_SetFrq
 
 Setting of the clock 0 in FM-S14 in FMC1 to 130MHz
 
@@ -23,4 +23,9 @@ Setting of the clock 0 in FM-S14 in FMC1 to 130MHz
     
 Switching the clock matrix (input 15 routed to output 4)
 
-    4 bus_sel 15 4 ClkMtx_set_out
+    15 4 ClkMtx_SetOut
+
+Switching the clock matrix (output 5 switched off)
+
+    -1 7 ClkMtx_SetOut
+    
