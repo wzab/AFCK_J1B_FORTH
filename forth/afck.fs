@@ -96,7 +96,7 @@ create s5_hsdvs  11  , 9 ,  7 , 6 , 5 , 4 ,
     \ read RFREQ and HSDIV
     7 Si57x_rd ( frq r7 )
     dup 5 rshift 4 + S5_HSDIV !
-    1f and 2 lshift ( frq N1[6:2] )
+    $1f and 2 lshift ( frq N1[6:2] )
     8 Si57x_rd ( frq N1[6:2] r8)
     dup 6 rshift ( frq N1[6:2] r8 N1[1:0] )
     rot or ( frq r8 N1 )
@@ -381,10 +381,10 @@ variable S14_P0V
     23 swap FMS14Q_wr ( )
     \ Now toggle the FSEL bits
     18 FMS14Q_rd
-    dup e7 and
+    dup $e7 and
     18 swap FMS14Q_wr
     $18 or
-    $12 swap FMS14Q_wr
+    18 swap FMS14Q_wr
 ;
 
 : FMS14Q_SetFrq ( frq -- )
@@ -398,11 +398,11 @@ variable S14_P0V
 
 : ClkMtx_SetOut ( n_in n_out -- )
     over -1 < ( n_in n_out flag )
-    2 pick f > or if
+    2 pick 15 > or if
 	." n_in must be between -1 and 15 "
 	$83 throw
     then ( n_in n_out )
-    dup 0 < over f > or if
+    dup 0 < over 15 > or if
 	." n_out must be between 0 and 15 "
 	$83 throw
     then ( n_in n_out )
