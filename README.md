@@ -10,7 +10,9 @@ The project reuses also the I2C controller available from OpenCores.
 # Usage
 
 Initialization of communication
+
     AFCK_i2c_init
+
 Setting of the Si57x clock to 125MHz
 
     4 bus_sel 125000000 Si57x_set_frq
