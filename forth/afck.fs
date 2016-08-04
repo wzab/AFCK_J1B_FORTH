@@ -334,6 +334,7 @@ hex
 	.s
     loop ( frq )
     \ Calculate M=FVCO/FREF to get the value properly scaled, multiply FVCO first by 1<<18)
+    drop ( ) \ Dropped frq
     S14_FVCO 2@ 
     2dup ." fvco=" d.
     1 12 lshift 0 ud* ( )
