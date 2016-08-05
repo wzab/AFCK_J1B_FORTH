@@ -96,6 +96,23 @@ you should simply define your procedure as the "cold" word.
 When the execution of your procedure is finished, swapforth enters normal interactive mode, so it is possible to provide
 both - initial configuration of the board and interactive debugging.
 
+Below is an example of the startup procedure:
+
+    : cold
+       \ Set status "running" on out2
+       $a55a OUT2_REG io!
+       AFCK_i2c_init \ Start I2C controller
+       0 bus_sel 120000000 FMS14Q_SetFrq \ Set clock 0 in FM-S14 in FMC1 to 120MHz
+       156250000 Si57x_SetFrq \ Set Si57x clock to 156.25 MHz
+       15 7 ClkMtx_SetOut \ Connect Si57x to the output 7 of clock matrix
+       \ Transfer the EUI to out0 and out1, so that the board logic may access it
+       0 5 1 do 8 lshift EUI_buf i + C@ or loop OUT0_REG io!
+       0 9 5 do 8 lshift EUI_buf i + C@ or loop OUT1_REG io!
+       \ Report status "success" on out1
+       $0110 OUT2_REG io!
+    ;   
+       
+
 ## Possible modifications
 
 You may want to modify behavior of the swapforth. This may require changing the original files. For example you may
