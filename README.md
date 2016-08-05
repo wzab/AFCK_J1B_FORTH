@@ -100,18 +100,24 @@ Below is an example of the startup procedure:
 
     : cold
        \ Set status "running" on out2
-       $a55a OUT2_REG io!
+       $a501 OUT2_REG io!
        AFCK_i2c_init \ Start I2C controller
        0 bus_sel 120000000 FMS14Q_SetFrq \ Set clock 0 in FM-S14 in FMC1 to 120MHz
+       \ Set status "FMS14" clock configured 
+       $a502 OUT2_REG io!
        156250000 Si57x_SetFrq \ Set Si57x clock to 156.25 MHz
+       \ Set status "Si57x" clock configured
+       $a503 OUT2_REG io!
        15 7 ClkMtx_SetOut \ Connect Si57x to the output 7 of clock matrix
        \ Transfer the EUI to out0 and out1, so that the board logic may access it
+       EUI_read
        0 5 1 do 8 lshift EUI_buf i + C@ or loop OUT0_REG io!
        0 9 5 do 8 lshift EUI_buf i + C@ or loop OUT1_REG io!
        \ Report status "success" on out1
-       $0110 OUT2_REG io!
+       $a500 OUT2_REG io!
     ;   
-       
+
+If the OUT2 port is not set to $a500, after reasonable time it means that the "cold" word has failed. The value of the status allows to find which procedure has failed.
 
 ## Possible modifications
 
