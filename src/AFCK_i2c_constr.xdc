@@ -53,7 +53,7 @@ set_property PACKAGE_PIN G8 [get_ports clk2_p]
 # G8 - MGTREFCLK0P_117 - may go to FMC2_GBTCLK0_M2C
 # J8 - MGTREFCLK1P_117 - should go to LINK01_CLK
 
-set_property IOSTANDARD LVDS [get_ports clk0_p]
+set_property IOSTANDARD DIFF_SSTL15 [get_ports clk0_p]
 
 
 
