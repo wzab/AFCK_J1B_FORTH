@@ -20,7 +20,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "invalid hex value at line %d\n", i + 1);
         exit(1);
       }
-      top->v__DOT__ram[i] = v;
+      top->j1b__DOT__ram[i] = v;
     }
 
     top->resetq = 0;

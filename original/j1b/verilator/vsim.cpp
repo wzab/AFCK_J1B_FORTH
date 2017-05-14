@@ -59,7 +59,7 @@ Vj1b_init(v3 *self, PyObject *args, PyObject *kwds)
       fprintf(stderr, "invalid hex value at line %d\n", i + 1);
       exit(1);
     }
-    self->dut->v__DOT__ram[i] = v;
+    self->dut->j1b__DOT__ram[i] = v;
   }
 
   return 0;

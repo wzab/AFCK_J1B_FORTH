@@ -242,7 +242,7 @@ begin  -- architecture test
       reset_count <= (others => '0');
       resetq      <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge
-      if reset_count < 20000000 then
+      if reset_count < 50000000 then
         resetq      <= '0';
         reset_count <= reset_count + 1;
       else
@@ -458,7 +458,7 @@ begin  -- architecture test
 
   uart_2 : uart
     generic map (
-      brg_div => 11)
+      brg_div => 27) -- 50e6/115200/16
     port map (
       clk         => clk,
       din         => uart_din,
@@ -477,7 +477,7 @@ begin  -- architecture test
   -- Frequency meters
   frq_counter_0 : frq_counter
     generic map (
-      CNT_TIME   => 20000000,
+      CNT_TIME   => 50000000,
       CNT_LENGTH => 32)
     port map (
       ref_clk => clk,
@@ -487,7 +487,7 @@ begin  -- architecture test
 
   frq_counter_1 : frq_counter
     generic map (
-      CNT_TIME   => 20000000,
+      CNT_TIME   => 50000000,
       CNT_LENGTH => 32)
     port map (
       ref_clk => clk,
@@ -497,7 +497,7 @@ begin  -- architecture test
 
   frq_counter_2 : frq_counter
     generic map (
-      CNT_TIME   => 20000000,
+      CNT_TIME   => 50000000,
       CNT_LENGTH => 32)
     port map (
       ref_clk => clk,
