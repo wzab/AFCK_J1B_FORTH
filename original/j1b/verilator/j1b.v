@@ -18,7 +18,7 @@ module j1b(input wire clk,
   wire [31:0] dout;
   wire [31:0] io_din;
   wire [12:0] code_addr;
-  wire [15:0] insn;
+  reg [15:0] insn;
 
   wire [12:0] codeaddr = {1'b0, code_addr[12:1]};
 
