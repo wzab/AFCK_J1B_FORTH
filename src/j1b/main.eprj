@@ -2,7 +2,7 @@ vhdl work j1.vhd
 vhdl work j1_env.vhd
 vhdl work prog.vhd
 vhdl work smalluart.vhd
-vhdl work stack.vhd
+vhdl work stack_mem.vhd
 vhdl work frq_counter.vhd
 include wb
 include i2c_hw
