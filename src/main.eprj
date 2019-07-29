@@ -1,4 +1,4 @@
-xdc work AFCK_i2c_constr.xdc
+xdc AFCK_i2c_constr.xdc
 vhdl work i2c_j1b_ctrl_top.vhd
 include j1b
 
