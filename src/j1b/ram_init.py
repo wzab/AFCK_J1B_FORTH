@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Written by Wojciech M. Zabolotny ( wzab01<at>gmail.com ) 2.08.2016
 # This is a PUBLIC DOMAIN file (or licensed under Creative Commons CC0 license)
 # whatever better fits your needs
@@ -7,7 +7,7 @@ import sys
 fin=open(sys.argv[1],"r")
 dta=fin.readlines()
 n=len(dta);
-print n
+print(n)
 fout=open("prog.vhd","w")
 fout.write("""
 library ieee;
